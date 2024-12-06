@@ -12,7 +12,7 @@
 <img alt="" src="zippy.png">
 <h4>
 
-This is a Java App deployed by  Kubernetes on  <%out.println(System.getProperty("os.name"));%> at <%= (new java.util.Date()).toLocaleString()%> for Demo.
+This is an Java App deployed by  Kubernetes on  <%out.println(System.getProperty("os.name"));%> at <%= (new java.util.Date()).toLocaleString()%> for Demo.
 </h4>
 </center>
 </body>
