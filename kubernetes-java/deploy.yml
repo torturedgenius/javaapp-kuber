@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: tomcat
-        image: sathishbob/javaapp-jenkins-training:latest
+        image: torturedgenius/javaapp-k8s:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080
