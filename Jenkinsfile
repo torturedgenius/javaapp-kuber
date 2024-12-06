@@ -1,56 +1,50 @@
 pipeline {
-    environment {
-        imagename = "sathishbob/javaapp-jenkins-training"
-        dockerImage = ''
-        registryCredentials = 'dockerhub'
-    }
+    
     agent any
     tools {
         maven "MVN3"
         dockerTool "docker"
     }
-    
     stages {
-        stage("pullscm") {
+        stage('pullscm') {
             steps {
-                git credentialsId: 'github', url: 'git@github.com:sathishbob/javaapp-kuber.git'
+                git credentialsId: 'github', url: 'git@github.com:torturedgenius/javaapp-kuber.git'
             }
         }
-        stage("build") {
+        
+        stage('build') {
             steps {
                 sh "mvn -f kubernetes-java clean install"
             }
         }
-        stage("Build Docker Image") {
+        
+        stage('build docker image') {
             steps {
                 script {
-                    dockerImage = docker.build("$imagename","kubernetes-java")
+                    dockerImage = docker.build("torturedgenius/javaapp-k8s","kubernetes-java")
                 }
             }
         }
-        stage("push Docker image") {
+        
+        stage('Push docker image') {
             steps {
                 script {
-                    docker.withRegistry( '', registryCredentials ) {
-                        dockerImage.push("$BUILD_NUMBER")
-                        dockerImage.push('latest')
+                    docker.withRegistry( '', 'dockerhub') {
+                        dockerImage.push ("$BUILD_NUMBER")
                     }
                 }
             }
         }
-        stage(Removeunusedimages) {
+		stage ('Validate k8s connectivity') {
             steps {
-                sh "docker rmi $imagename:$BUILD_NUMBER"
-                sh "docker rmi $imagename"
-            }
-        }
-        stage("kubedeployment") {
-            steps {
-                sh "sed -i s/latest/$BUILD_NUMBER/g kubernetes-java/deploy.yml"
-                sh "kubectl apply -f kubernetes-java/deploy.yml"
-                sh 'sleep 15 && kubectl get nodes'
+                script {
+                    withKubeConfig([credentialsId: 'kube']) {
+                        sh "sed -i s/latest/$BUILD_NUMBER/g kubernetes-java/deploy.yml"
+                        sh "kubectl apply -f kubernetes-java/deploy.yml"
+                        sh 'sleep 15 && kubectl get nodes'
+                    }
+                }
             }
         }
     }
-
 }
